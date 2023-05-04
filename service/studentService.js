@@ -1,12 +1,16 @@
-const StudentModel = require('../model/studentModel');
-const { readCsvWithPagination } = require('../utils');
+const Student = require("../model/studentModel");
+const { readCsvWithPagination } = require("../utils");
 
 class StudentService {
   static async getStudents(pageSize, pageNumber) {
-    const students = await readCsvWithPagination('students.csv', pageSize, pageNumber);
-
-    // Conversion des données CSV en objets Student
-    const studentObjects = students.map((student) => new StudentModel(student));
+    const students = await readCsvWithPagination(
+      "students.csv",
+      pageSize,
+      pageNumber
+    );
+    const studentObjects = students.map(
+      (student) => new Student({ ...student })
+    );
     return studentObjects;
   }
 }

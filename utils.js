@@ -1,5 +1,5 @@
-const fs = require('fs');
-const csv = require('csv-parser');
+const fs = require("fs");
+const csv = require("csv-parser");
 
 function readCsvWithPagination(filePath, pageSize = 10, pageNumber = 1) {
   let results = [];
@@ -9,14 +9,14 @@ function readCsvWithPagination(filePath, pageSize = 10, pageNumber = 1) {
   return new Promise((resolve, reject) => {
     fs.createReadStream(filePath)
       .pipe(csv())
-      .on('data', (data) => {
+      .on("data", (data) => {
         results.push(data);
       })
-      .on('end', () => {
+      .on("end", () => {
         let paginatedResults = results.slice(start, end);
         resolve(paginatedResults);
       })
-      .on('error', (error) => {
+      .on("error", (error) => {
         reject(error);
       });
   });

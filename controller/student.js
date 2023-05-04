@@ -1,32 +1,28 @@
-const url = require('url');
-const StudentService = require('../service/studentService');
+const express = require("express");
+const router = express.Router();
+const z = require("zod");
+const StudentService = require("../service/studentService");
 
-async function handle(req, res) {
-  const parsedUrl = url.parse(req.url, true);
+const validateStringAsNumber = () =>
+  z.preprocess(
+    (a) => parseInt(z.string().parse(a), 10),
+    z.number().positive().max(100)
+  );
 
-  if (parsedUrl.pathname === '/api/students' && req.method === 'GET') {
-    const pageSize = parseInt(parsedUrl.query.pageSize || '10');
-    const pageNumber = parseInt(parsedUrl.query.pageNumber || '1');
+const pagination = z.object({
+  page: validateStringAsNumber().optional(),
+  size: validateStringAsNumber().optional(),
+  asc: z.boolean().optional(),
+});
 
-    try {
-      // Appel de la couche de service pour récupérer les étudiants
-      const students = await StudentService.getStudents(pageSize, pageNumber);
-
-      // Envoi de la réponse JSON
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      res.end(JSON.stringify(students));
-    } catch (error) {
-      console.error(error);
-      res.setHeader('Content-Type', 'text/plain');
-      res.statusCode = 500;
-      res.end('Internal server error');
-    }
-  } else {
-    res.setHeader('Content-Type', 'text/plain');
-    res.statusCode = 404;
-    res.end('Not found');
+router.get("/list", async (req, res) => {
+  try {
+    const { page = 1, size = 10 } = pagination.parse(req.query);
+    const students = await StudentService.getStudents(page, size);
+    res.send(students);
+  } catch (error) {
+    res.status(400).send(error.message);
   }
-}
+});
 
-module.exports = { handle };
+module.exports = router;
